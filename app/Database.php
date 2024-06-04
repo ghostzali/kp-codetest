@@ -9,6 +9,8 @@ class Database {
     function medicine_outgoing() {
         return [
             "medicine_outgoing.id",
+            'id_medicine',
+            'id_unit',
             "medicines.name as medicine_name",
             "units.name as unit_name",
             "medicines.id_clinic",
