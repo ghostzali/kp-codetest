@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\V1;
 
 use App\Database;
+use App\Helpers\PaginationHelper;
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Medicine;
 use App\Models\MedicineOutgoing;
@@ -29,9 +31,10 @@ class MedicineOutgoingController extends Controller
             $level_user = $request->user()->level;
             $access = (new \App\Http\Controllers\FunctionController)->checkACL($level_user, $id_user, 'medicine_outgoing', 'read');
             if ($access == false) {
-                $response['error'] = true;
-                $response['message'] = trans('validation.unauthorized');
-                return response()->json($response);
+                // $response['error'] = true;
+                // $response['message'] = trans('validation.unauthorized');
+                // return response()->json($response);
+                return ResponseHelper::error(trans('validation.unauthorizad'));
             }
             echo $access;
 
@@ -82,57 +85,22 @@ class MedicineOutgoingController extends Controller
 
             $query->where('medicine_outgoing.date', '>=', '' . $from_date . '')->where('medicine_outgoing.date', '<=', '' . $to_date . '');
             $query->where('medicine_outgoing.quantity','<>', 0);
-            if (!empty($per_page)) {
-                $item = $query->paginate($per_page);
-            } else {
-                $item = $query->get();
-            }
 
-            $items = [];
-            foreach ($item as $key => $value) {
-                $medicine = Medicine::withTrashed()->select((new Database)->sub_medicine())->where('id', $value['id_medicine'])->first();
-
-                $items[] = [
+            $mapItem = function (MedicineOutgoing $value) {
+                return [
                     'id' => $value['id'],
                     'id_medicine' => $value['id_medicine'],
                     'batch_no' => $value['batch_no'],
                     'exp_date' => $value['exp_date'],
                     'quantity' => $value['quantity'],
                     'date' => $value['date'],
-                    'unit' => array(
-                        'id' => $value['id_unit'],
-                        'name' => $value['unit_name']
-                    ),
-                    'medicine' => $medicine
+                    'unit' => $value->unit(),
+                    'medicine' => $value->medicine()
                 ];
-            }
-
-            if (!empty($per_page)) {
-                $response = [
-                    'total' => $item->total(),
-                    'per_page' => $item->perPage(),
-                    'current_page' => $item->currentPage(),
-                    'last_page' => $item->lastPage(),
-                    'from' => $item->firstItem(),
-                    'to' => $item->lastItem(),
-                    'data' => $items,
-                    'error' => false
-                ];
-            } else {
-                $response = [
-                    'total' => $item->count(),
-                    'per_page' => $item->count(),
-                    'current_page' => 1,
-                    'last_page' => 1,
-                    'from' => 1,
-                    'to' => $item->count(),
-                    'data' => $items,
-                    'error' => false
-                ];
-            }
+            };
+            $response = PaginationHelper::pagination($query, $per_page, $mapItem);
         } catch (\Exception $error) {
-            $response['error'] = true;
-            $response['message'] = $error->getMessage();
+            return ResponseHelper::error($error->getMessage());
         }
 
         try {
@@ -148,7 +116,7 @@ class MedicineOutgoingController extends Controller
             );
         } catch (\Exception $error_log) { }
 
-        return response()->json($response);
+        return ResponseHelper::success($response);
     }
 
     public function show($lang, $id = 1, Request $request)

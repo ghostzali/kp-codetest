@@ -4,7 +4,8 @@ namespace App\Helpers;
 
 class PaginationHelper {
     public static function pagination($query, $per_page, callable $dataMapper = null) {
-        $data = $query->paginate($per_page);
+        $isHasPerPage = !!$per_page;
+        $data = $isHasPerPage ? $query->paginate($per_page) : $query->get();
 
         $items = [];
         foreach ($data as $key => $value) {
@@ -12,12 +13,12 @@ class PaginationHelper {
         }
 
         return [
-            'total' => $data->total(),
-            'per_page' => $data->perPage(),
-            'current_page' => $data->currentPage(),
-            'last_page' => $data->lastPage(),
-            'from' => $data->firstItem(),
-            'to' => $data->lastItem(),
+            'total' => $isHasPerPage ? $data->total() : $query->count(),
+            'per_page' => $isHasPerPage ? $data->perPage() : 0,
+            'current_page' => $isHasPerPage ? $data->currentPage() : 1,
+            'last_page' => $isHasPerPage ? $data->lastPage() : 1,
+            'from' => $isHasPerPage ? $data->firstItem() : 1,
+            'to' => $isHasPerPage ? $data->lastItem() : $query->count(),
             'data' => $items,
         ];
     }
