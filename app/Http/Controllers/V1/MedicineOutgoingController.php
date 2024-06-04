@@ -31,12 +31,8 @@ class MedicineOutgoingController extends Controller
             $level_user = $request->user()->level;
             $access = (new \App\Http\Controllers\FunctionController)->checkACL($level_user, $id_user, 'medicine_outgoing', 'read');
             if ($access == false) {
-                // $response['error'] = true;
-                // $response['message'] = trans('validation.unauthorized');
-                // return response()->json($response);
                 return ResponseHelper::error(trans('validation.unauthorizad'));
             }
-            echo $access;
 
             $id_clinic = (new \App\Http\Controllers\FunctionController)->getIDClinicUser($id_user);
 
@@ -129,29 +125,25 @@ class MedicineOutgoingController extends Controller
             $level_user = $request->user()->level;
             $access = (new \App\Http\Controllers\FunctionController)->checkACL($level_user, $id_user, 'medicine_outgoing', 'read');
             if ($access == false) {
-                $response['error'] = true;
-                $response['message'] = trans('validation.unauthorized');
-                return response()->json($response);
+                return ResponseHelper::error(trans('validation.unauthorized'));
             }
 
             $id_clinic = (new \App\Http\Controllers\FunctionController)->getIDClinicUser($id_user);
 
             $medicine_outgoing = $this->getData($lang, $id);
             if ($medicine_outgoing == false) {
-                $response['error'] = true;
-                $response['message'] = trans('validation.data_not_found');
+                return ResponseHelper::error(trans('validation.data_not_found'));
             } else {
                 $medicine = Medicine::withTrashed()->findOrFail($medicine_outgoing->id_medicine);
                 if ($medicine->id_clinic != $id_clinic) {
-                    $response['error'] = true;
-                    $response['message'] = trans('validation.data_not_found');
+                    return ResponseHelper::error(trans('validation.data_not_found'));
                 } else {
                     $medicine_outgoing['error'] = false;
                     $response = $medicine_outgoing;
                 }
             }
         } catch (\Exception $error) {
-            $response['error'] = true;
+            return ResponseHelper::error($error->getMessage());
         }
 
         try {
@@ -166,7 +158,7 @@ class MedicineOutgoingController extends Controller
             );
         } catch (\Exception $error_log) { }
 
-        return response()->json($response);
+        return ResponseHelper::success(array($response));
     }
 
     function getData($lang, $id)
@@ -202,9 +194,7 @@ class MedicineOutgoingController extends Controller
         $level_user = $request->user()->level;
         $access = (new \App\Http\Controllers\FunctionController)->checkACL($level_user, $id_user, 'medicine_outgoing', 'create');
         if ($access == false) {
-            $response['error'] = true;
-            $response['message'] = trans('validation.unauthorized');
-            return response()->json($response);
+            return ResponseHelper::error(trans('validation.unauthorized'));
         }
 
         $input = $request->all();
