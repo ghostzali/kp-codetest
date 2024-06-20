@@ -145,9 +145,40 @@ class MedicineOutgoingRepositoryImpl implements MedicineOutgoingRepository
                     ON medicine_incoming.batch_no = medicine_outgoing.batch_no
                     WHERE
                     medicine_incoming.id_medicine = '" . $id_medicine . "' AND
-                    (medicine_incoming.quantity>medicine_outgoing.quantity OR medicine_outgoing.batch_no is NULL) AND medicine_incoming.deleted_at is NULL
+                    (medicine_incoming.quantity > medicine_outgoing.quantity OR medicine_outgoing.batch_no is NULL) AND medicine_incoming.deleted_at is NULL
                     GROUP BY medicine_incoming.batch_no
                     ORDER BY medicine_incoming.date ASC");
+
+        $newQuery = DB::select("
+            SELECT medicine_incoming.*, IF(
+                medicine_outgoing.quantity is NULL,
+                medicine_incoming.quantity,
+                (medicine_incoming.quantity-medicine_outgoing.quantity)
+            ) AS stock
+            FROM medicine_incoming
+            LEFT JOIN
+                    (SELECT medicine_outgoing.batch_no, sum(medicine_outgoing.quantity) as quantity
+                    FROM `medicine_outgoing`
+                    WHERE AND medicine_outgoing.deleted_at is NULL
+                    GROUP BY medicine_outgoing.batch_no)
+                ON medicine_incoming.batch_no = medicine_outgoing.batch_no
+            WHERE medicine_incoming.id_medicine = '" . $id_medicine . "' AND medicine_incoming.quantity > medicine_outgoing.quantity AND medicine_incoming.deleted_at is NULL
+                    GROUP BY medicine_outgoing.batch_no
+                    ORDER BY medicine_incoming.date ASC
+        ");
+
+        $newQuery2 = DB::select("
+            SELECT medicine_incoming.*, IF(
+                sum(medicine_outgoing.quantity) is NULL,
+                medicine_incoming.quantity,
+                (medicine_incoming.quantity-sum(medicine_outgoing.quantity))
+            ) AS stock
+             FROM medicine_outgoing
+             RIGHT JOIN medicine_incoming ON medicine_incoming.batch_no = medicine_outgoing.batch_no
+             WHERE medicine_incoming.id_medicine = '" . $id_medicine . "' AND medicine_incoming.deleted_at is NULL
+                    GROUP BY medicine_outgoing.batch_no
+                    ORDER BY medicine_incoming.date ASC
+        ");
 
         $check_stock = true;
 
