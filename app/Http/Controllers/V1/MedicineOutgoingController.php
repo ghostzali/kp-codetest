@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Repositories\MedicineOutgoingRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class MedicineOutgoingController extends Controller
@@ -19,7 +18,8 @@ class MedicineOutgoingController extends Controller
         $this->medicineOutgoingRepository = $medicineOutgoingRepository;
     }
 
-    public function index (string $lang, Request $request) {
+    public function index(string $lang, Request $request)
+    {
         App::setLocale($lang);
         try {
             $id_user = $request->user()->id;
@@ -45,7 +45,8 @@ class MedicineOutgoingController extends Controller
                 $params,
                 app('Illuminate\Http\Response')->status()
             );
-        } catch (\Exception $error_log) { }
+        } catch (\Exception $error_log) {
+        }
 
         return ResponseHelper::success($response);
     }
@@ -91,7 +92,8 @@ class MedicineOutgoingController extends Controller
                 $params,
                 app('Illuminate\Http\Response')->status()
             );
-        } catch (\Exception $error_log) { }
+        } catch (\Exception $error_log) {
+        }
 
         return ResponseHelper::success(array($response));
     }
@@ -129,8 +131,8 @@ class MedicineOutgoingController extends Controller
         if (!empty($errors)) {
             $data['success'] = false;
             $data['error'] = false;
-            $data['errors']  = $errors;
-            $data['message']  = (new \App\Functions)->error($errors);
+            $data['errors'] = $errors;
+            $data['message'] = (new \App\Functions)->error($errors);
         } else {
             $data['success'] = true;
             $data['error'] = false;
@@ -158,7 +160,8 @@ class MedicineOutgoingController extends Controller
                 $params,
                 app('Illuminate\Http\Response')->status()
             );
-        } catch (\Exception $error_log) { }
+        } catch (\Exception $error_log) {
+        }
 
         return response()->json($response);
     }

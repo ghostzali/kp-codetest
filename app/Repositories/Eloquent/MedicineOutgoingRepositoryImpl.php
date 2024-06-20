@@ -59,7 +59,7 @@ class MedicineOutgoingRepositoryImpl implements MedicineOutgoingRepository
         }
 
         $query->where('medicine_outgoing.date', '>=', '' . $from_date . '')->where('medicine_outgoing.date', '<=', '' . $to_date . '');
-        $query->where('medicine_outgoing.quantity','<>', 0);
+        $query->where('medicine_outgoing.quantity', '<>', 0);
 
         $mapItem = function (MedicineOutgoing $value) {
             return [
@@ -87,7 +87,8 @@ class MedicineOutgoingRepositoryImpl implements MedicineOutgoingRepository
                 ->where('medicine_outgoing.id', $id)
                 ->first();
 
-            if (empty($medicine_outgoing)) return false;
+            if (empty($medicine_outgoing))
+                return false;
 
             $medicine = Medicine::withTrashed()->select((new Database)->sub_medicine())->findOrFail($medicine_outgoing->id_medicine);
             $medicine_outgoing['medicine'] = $medicine;
@@ -99,7 +100,7 @@ class MedicineOutgoingRepositoryImpl implements MedicineOutgoingRepository
         return $data;
     }
 
-    public function show($id, $request, $id_user)
+    public function show($id, $id_user)
     {
         $id_clinic = (new \App\Http\Controllers\FunctionController)->getIDClinicUser($id_user);
 
@@ -121,7 +122,7 @@ class MedicineOutgoingRepositoryImpl implements MedicineOutgoingRepository
         $quantity = $input['quantity'];
         $date = Date("Y-m-d");
 
-        $data_outgoing['id_medicine'] =  $id_medicine;
+        $data_outgoing['id_medicine'] = $id_medicine;
 
         $query = DB::select("SELECT
             medicine_incoming.*,
