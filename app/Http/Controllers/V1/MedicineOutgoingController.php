@@ -63,7 +63,7 @@ class MedicineOutgoingController extends Controller
                 return ResponseHelper::error(trans('validation.unauthorized'));
             }
 
-            $data = $this->medicineOutgoingRepository->show($id, $request, $id_user);
+            $data = $this->medicineOutgoingRepository->show($id, $id_user);
             $id_clinic = $data["id_clinic"];
             $medicine_outgoing = $data["medicine_outgoing"];
 
